@@ -70,6 +70,7 @@ function startVoting() {
         username = document.getElementById("username").value,
         votepower = document.getElementById("votepower").value,
         delay = document.getElementById("delay").value,
+        debug = document.getElementById("debug").value,
         time, starttime, acttime, t = 1000,
         period = 10 * 60,
         utime, start, history,
@@ -123,27 +124,38 @@ function startVoting() {
                 //console.log(result);
                 for(var ai = 0; ai < result.length; ai++) {
                     let heId = result[ai][0];
+                    if(debug=="on") {
+                        console.log("heId = " + heId + ", записанный = " + accounts[u].lastId );
+                    }
                     //проверить id, больше ли, чем уже прочитанный ранее?
                     if(accounts[u].lastId < heId) {
                         let he = result[ai][1].op;
                         let time = result[ai][1].timestamp;
                         let utime = Date.parse(time) / t;
                         let tx = result[ai][1].trx_id;
+                        if(debug == "on") {
+                            console.log("he = " + he);
+                        }
                         //console.log(utime);
                         if(typeof he !== "undefined") {//Отсеять ошибки
-                            let earliesttime = acttime - (delay*60); //проверить, не созрел ли пост для голосования
-                            //console.log("время запуска = " + starttime);
-                            //console.log("время опроса = " + acttime);
-                            //console.log("время время созревания = " + earliesttime);
-                            //console.log("время создания поста = " + utime);
-                            if( utime > starttime && utime < earliesttime) {
-                                let op = he[0];
-                                let entry = he[1];
-                                //console.log(op);
-                                //интересует запись с типом comment, корневая запись в блоге и не правка текста
-                                if(op == "comment" && entry.author == u && entry.parent_author == "" && !entry.body.match("^@@ .* @@")) {
+                            let op = he[0];
+                            let entry = he[1];
+                            //console.log(op);
+                            //интересует запись с типом comment, корневая запись в блоге и не правка текста
+                            if(op == "comment" && entry.author == u && entry.parent_author == "" && !entry.body.match("^@@ .* @@")) {
+                                let earliesttime = acttime - (delay*60); //проверить, не созрел ли пост для голосования
+                                let fine_name = u + " / " + entry.permlink;
+                                if(debug == "on") {
+                                    console.log("найден пост " + fine_name);
+                                    console.log("время запуска = " + starttime);
+                                    console.log("время опроса = " + acttime);
+                                    console.log("время время созревания = " + earliesttime);
+                                    console.log("время создания поста = " + utime);
+                                    console.log("время создания поста = " + utime);
+                                }
+                                if(utime < earliesttime) {
                                     //console.log(entry);
-                                    console.log(heId + ":" + accounts[u].lastId  + " добавить в очередь : " + u + " / " + entry.permlink);
+                                    console.log(heId + ":" + accounts[u].lastId  + " добавить в очередь : " + fine_name);
                                     //добавляем в очередь для голосования
                                     accounts[u].queue.push({
                                         author : u,
